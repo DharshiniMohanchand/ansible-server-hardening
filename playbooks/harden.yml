@@ -1,0 +1,44 @@
+- name: Linux Server Hardening
+  hosts: target
+  become: yes
+
+  tasks:
+    - name: Update all packages
+      dnf:
+        name: "*"
+        state: latest
+
+    - name: Install security packages
+      dnf:
+        name:
+          - firewalld
+          - fail2ban
+        state: present
+
+    - name: Start and enable firewalld
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Set timezone to Asia/Kolkata
+      timezone:
+        name: Asia/Kolkata
+
+    - name: Create admin user
+      user:
+        name: ansibleadmin
+        groups: wheel
+        state: present
+
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+
+    - name: Restart SSH
+      service:
+        name: sshd
+        state: restarted
